@@ -25,15 +25,28 @@ import * as util from '../../util';
 export function getLogicalCoordinatesFromFlatIndex(
     coords: string[], shape: number[], index = 'index'): string {
   const strides = util.computeStrides(shape);
-  return strides
-      .map((stride, i) => {
-        const line1 = `int ${coords[i]} = ${index} / ${stride}`;
-        const line2 = i === strides.length - 1 ?
-            `int ${coords[i + 1]} = ${index} - ${coords[i]} * ${stride}` :
-            `index -= ${coords[i]} * ${stride}`;
-        return `${line1}; ${line2};`;
-      })
-      .join('');
+//   return strides
+//       .map((stride, i) => {
+//         const line1 = `int ${coords[i]} = ${index} / ${stride}`;
+//         const line2 = i === strides.length - 1 ?
+//             `int ${coords[i + 1]} = ${index} - ${coords[i]} * ${stride}` :
+//             `index -= ${coords[i]} * ${stride}`;
+//         return `${line1}; ${line2};`;
+//       })
+//       .join('');
+    
+   var returnVal = `int aa = 0; ${strides.map((stride, i) => {
+      var quantity = Math.floor(stride / 65535)
+      var remainder = stride % 65535
+      var line0 = `aa = ${quantity}; aa = aa * 65535; aa = aa + ${remainder}`
+      var line1 = `int ${coords[i]} = ${index} / aa`;
+      var line2 = i === strides.length - 1 ?
+          `int ${coords[i + 1]} = ${index} - ${coords[i]} * aa` :
+          `index -= ${coords[i]} * aa`;
+      return `${line0}; ${line1}; ${line2};`;
+    })
+    .join('')}`;
+    return returnVal; 
 }
 
 function buildVec(x: string[]): string {
